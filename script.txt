@@ -1,0 +1,57 @@
+///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;-$#,##0.00';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET FirstWeekDay=6;
+SET BrokenWeeks=1;
+SET ReferenceDay=0;
+SET FirstMonthOfYear=1;
+SET CollationLocale='en-US';
+SET CreateSearchIndexOnReload=1;
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET LongMonthNames='January;February;March;April;May;June;July;August;September;October;November;December';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+SET LongDayNames='Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday';
+SET NumericalAbbreviation='3:k;6:M;9:G;12:T;15:P;18:E;21:Z;24:Y;-3:m;-6:μ;-9:n;-12:p;-15:f;-18:a;-21:z;-24:y';
+
+///$tab Раздел
+[Импорт КГД]:
+LOAD
+    year(date_period) as [Sheet1.Год],
+    partner_region as [Все страны],
+    text([tnved_code]) AS [ТНВЭД-ТНВЭД ЕАЭС],
+//     ApplyMap('map_oked', tnved_code, null()) as [ОКЭД_КЛАСС_НАИМЕНОВАНИЕ],
+    left([tnved_code],2) AS [ТНВЭД_ГРУППА],
+	left([tnved_code],4) AS [ТНВЭД_ТП],
+    left([tnved_code],6) AS [ТНВЭД_СУБПОЗ],
+    left([tnved_code],8) AS [ТНВЭД_ПОДСУБ],
+    net_weight as [Импорт, тонн],
+    add_measure_unit as [Импорт, доп. ед.],
+    quantity_in_mesure_units as "Наименование дополнительной единицы измерения",
+    usd_k_cost as [Импорт, тыс. $],
+    QuarterName(date_period) as Квартал,    
+    'Комитет государственных доходов' As [Источник данных]
+FROM [lib://GISP (datanomix.pro_alex@datanomix.pro)/KGD/Экспорт-импорт 2016-2019 (Квартал, ТНВЭД10, Страны)_databox.qvd]
+(qvd) WHERE trade_type = 1;
+LEFT JOIN
+LOAD
+    year(date_period) as [Sheet1.Год],
+    partner_region as [Все страны],
+    text([tnved_code]) AS [ТНВЭД-ТНВЭД ЕАЭС],
+//     ApplyMap('map_oked', tnved_code, null()) as [ОКЭД_КЛАСС_НАИМЕНОВАНИЕ],
+    left([tnved_code],2) AS [ТНВЭД_ГРУППА],
+	left([tnved_code],4) AS [ТНВЭД_ТП],
+    left([tnved_code],6) AS [ТНВЭД_СУБПОЗ],
+    left([tnved_code],8) AS [ТНВЭД_ПОДСУБ],
+    net_weight as [Экспорт, тонн],
+    add_measure_unit as [Экспорт, доп. ед.],
+    quantity_in_mesure_units as "Наименование дополнительной единицы измерения",
+    usd_k_cost as [Экспорт, тыс. $],
+    QuarterName(date_period) as Квартал
+FROM [lib://GISP (datanomix.pro_alex@datanomix.pro)/KGD/Экспорт-импорт 2016-2019 (Квартал, ТНВЭД10, Страны)_databox.qvd]
+(qvd) WHERE trade_type = 0;
